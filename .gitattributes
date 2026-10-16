@@ -1,0 +1,2 @@
+# Keep shell scripts and other source files portable after checkout.
+* text=auto eol=lf

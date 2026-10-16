@@ -1,0 +1,22 @@
+{
+  "schema": "physicsbench-run/v1",
+  "backend": "opencode",
+  "harness_executable": "opencode",
+  "model_id": "REPLACE_WITH_VERIFIED_PROVIDER_MODEL_ID",
+  "reasoning_effort": "high",
+  "harness_variant": "high",
+  "harness_variant_options": {"reasoningEffort": "high"},
+  "harness_output_token_cap": null,
+  "model_output_token_limit": null,
+  "provider_configuration": {},
+  "round": 1,
+  "command_timeout_max_seconds": 1200,
+  "container_runtime": "podman",
+  "container_image": "REGISTRY/SCIENCE_IMAGE@sha256:REPLACE_WITH_VERIFIED_DIGEST",
+  "credential_env": ["OPENAI_API_KEY"],
+  "task_only_deployment_confirmed": false,
+  "resource_limits_enforced_externally": false,
+  "submission_max_files": 10000,
+  "submission_overflow_policy": "warn_and_seal",
+  "submission_max_bytes": 2147483648
+}

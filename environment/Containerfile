@@ -1,0 +1,12 @@
+# Project science-image recipe; third-party components keep their own licenses.
+FROM quay.io/condaforge/miniforge3@sha256:95195a50e20f7929a31a68ea407cefe117423258639efb6b66f0518e4b86f8ee
+COPY environment.requested.yml /tmp/environment.requested.yml
+RUN mamba env update --name base --file /tmp/environment.requested.yml \
+    && mamba clean --all --yes \
+    && rm -f /tmp/environment.requested.yml \
+    && mkdir -p /workspace /tmp/exam-home \
+    && chmod 1777 /workspace /tmp /tmp/exam-home
+ENV PATH=/opt/conda/bin:/usr/local/bin:/usr/bin:/bin \
+    HOME=/tmp/exam-home PYTHONNOUSERSITE=1 MPLBACKEND=Agg
+WORKDIR /workspace
+CMD ["/bin/bash"]

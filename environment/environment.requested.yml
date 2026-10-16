@@ -1,0 +1,32 @@
+# Generic CPU science environment request, not a resolved dependency lockfile.
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - numpy=1.26
+  - scipy=1.11
+  - matplotlib=3.8
+  - sympy=1.13
+  - numba=0.60
+  - h5py=3.11
+  - pandas=2.2
+  - psutil=6.0
+  - pyyaml=6.0
+  - pillow=10.4
+  - threadpoolctl=3.5
+  - joblib=1.4
+  - tqdm=4.66
+  - c-compiler=1.11
+  - cxx-compiler=1.11
+  - fortran-compiler=1.11
+  - cmake=4.1
+  - make=4.4
+  - ninja=1.13
+  - pkg-config=0.29
+  - openmpi=5.0
+  - mpi4py=4.1
+  - fftw=3.3
+  - eigen=5.0
+  - git=2.51
+  - ripgrep=14.1
+  - jq=1.8

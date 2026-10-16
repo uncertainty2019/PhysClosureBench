@@ -1,0 +1,16 @@
+{
+  "schema": "physicsbench-run/v1",
+  "backend": "local-smoke",
+  "candidate_command": ["{python}", "{mock_candidate}"],
+  "model_id": null,
+  "reasoning_effort": null,
+  "harness_variant": null,
+  "harness_output_token_cap": null,
+  "model_output_token_limit": null,
+  "round": 1,
+  "command_timeout_max_seconds": 1200,
+  "credential_env": [],
+  "submission_max_files": 10000,
+  "submission_overflow_policy": "warn_and_seal",
+  "submission_max_bytes": 2147483648
+}

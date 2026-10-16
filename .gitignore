@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.env.*
+state/
+*.egg-info/
+build/
+dist/
+configs/run.local.json
+configs/*.local.json
+configs/*.local.*
+
+# Local development history is not part of the public release.
+BUILD_NOTES.md
+

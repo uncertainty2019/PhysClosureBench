@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:physicsbench:result:v1",
+  "title": "Run summary, without scientific grading",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "run_id", "case_id", "model_id", "reasoning_effort", "harness_variant", "harness_output_token_cap", "model_output_token_limit", "effective_opencode_configuration_sha256", "submission_overflow_policy", "round", "backend", "started_at", "finished_at", "elapsed_seconds", "wall_seconds", "command_timeout_max_seconds", "configuration_sha256", "harness_version", "harness_sha256", "container_image", "adapter_sha256", "status", "exit_code", "isolation", "task_files", "submission_files", "submission_requirements", "archive", "archive_sha256", "findings", "warnings", "grading"],
+  "properties": {
+    "schema": {"const": "physicsbench-result/v1"},
+    "run_id": {"type": "string", "format": "uuid"},
+    "case_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,95}$"},
+    "model_id": {"type": ["string", "null"]},
+    "reasoning_effort": {"type": ["string", "null"]},
+    "harness_variant": {"type": ["string", "null"]},
+    "harness_output_token_cap": {"type": ["integer", "null"], "minimum": 1},
+    "model_output_token_limit": {"type": ["integer", "null"], "minimum": 1},
+    "effective_opencode_configuration_sha256": {"anyOf": [{"type": "string", "pattern": "^[a-f0-9]{64}$"}, {"type": "null"}]},
+    "submission_overflow_policy": {"enum": ["warn_and_seal", "reject"]},
+    "round": {"type": "integer", "minimum": 1},
+    "backend": {"enum": ["local-smoke", "opencode"]},
+    "started_at": {"type": "string", "format": "date-time"},
+    "finished_at": {"type": "string", "format": "date-time"},
+    "elapsed_seconds": {"type": "number", "minimum": 0},
+    "wall_seconds": {"type": "integer", "minimum": 1},
+    "command_timeout_max_seconds": {"type": "integer", "minimum": 1},
+    "configuration_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "harness_version": {"type": ["string", "null"]},
+    "harness_sha256": {"anyOf": [{"type": "string", "pattern": "^[a-f0-9]{64}$"}, {"type": "null"}]},
+    "container_image": {"type": ["string", "null"]},
+    "adapter_sha256": {"anyOf": [{"type": "string", "pattern": "^[a-f0-9]{64}$"}, {"type": "null"}]},
+    "status": {"enum": ["completed", "harness_exit_nonzero", "time_limit", "infrastructure_failure"]},
+    "exit_code": {"type": ["integer", "null"]},
+    "isolation": {"enum": ["not_enforced_smoke_only", "task_only_host_and_network_disabled_container"]},
+    "task_files": {"type": "array", "items": {"$ref": "#/$defs/file"}},
+    "submission_files": {"type": "array", "items": {"$ref": "#/$defs/file"}},
+    "submission_requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required_files", "missing_files", "status"],
+      "properties": {
+        "required_files": {"const": ["REPORT.md", "DERIVATION.md", "RUN_LOG.md", "REFERENCES.md", "INTEGRITY.md", "ARTIFACTS.json"]},
+        "missing_files": {"type": ["array", "null"], "items": {"type": "string"}},
+        "status": {"enum": ["files_present", "files_missing", "not_checked"]}
+      },
+      "description": "File presence only, based on the sealed inventory; not content validity or a scientific score. Missing entries never block sealing. not_checked means sealing failed."
+    },
+    "archive": {"enum": ["submission.tar.gz", null]},
+    "archive_sha256": {"anyOf": [{"type": "string", "pattern": "^[a-f0-9]{64}$"}, {"type": "null"}]},
+    "findings": {"type": "array", "items": {"type": "string"}},
+    "warnings": {"type": "array", "items": {"type": "string"}},
+    "grading": {"const": null, "description": "No scientific grade is inferred by this public runner."}
+  },
+  "$defs": {
+    "file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "bytes", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "bytes": {"type": "integer", "minimum": 0},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    }
+  }
+}
