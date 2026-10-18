@@ -16,35 +16,74 @@
   const validationNames={honest_scope:'Scope justification',unconditional_material_validation:'Required validation',risk_triggered_material_validation:'Risk-linked validation'};
   document.getElementById('validation-bars').innerHTML=Object.entries(validationNames).map(([k,name])=>{const v=stats.validation[k],percent=100*v.recorded_conditional_completion_rate;return `<div class="validation-row"><span>${name}<small>${v.satisfied} / ${v.applicable} applicable criteria</small></span><div class="validation-track"><i style="width:${percent}%"></i></div><b>${percent.toFixed(1)}%</b></div>`;}).join('');
 
+  const commonPath='M 70 450 C 145 443 210 412 270 405';
   const routes=[
-    {key:'kimi',color:'#206c52',path:'M 65 283 C 175 263 252 220 360 190 S 528 115 622 44',label:'Kimi · final RC4',lx:645,ly:43},
-    {key:'gpt',color:'#548497',path:'M 65 283 C 165 269 262 229 365 193 S 532 141 686 132',label:'GPT · final RC3',lx:697,ly:124},
-    {key:'gemini',color:'#c77844',path:'M 65 283 C 175 271 266 245 346 218 S 425 252 505 264 S 671 269 810 262',label:'Gemini · final RC2',lx:671,ly:293}
+    {key:'kimi',color:'#206c52',path:commonPath+' C 420 365 575 245 760 90'},
+    {key:'gpt',color:'#548497',path:commonPath+' C 410 380 620 300 850 265'},
+    {key:'gemini',color:'#c77844',path:commonPath+' C 380 390 450 360 500 390 S 720 458 1000 420'}
   ];
-  document.getElementById('pathway-scene').innerHTML=`<ol class="pathway-chapters" aria-label="Illustration reading chapters"><li>Numerical evidence</li><li>Physical interpretation</li><li>Applicability & scope</li></ol><svg class="pathway-svg" viewBox="0 0 900 325" role="img" aria-label="Editorial mountain illustration of three Case30 investigations with final outcomes Kimi RC4, GPT RC3 and Gemini RC2. Path geometry is not measured execution or intermediate grading."><path d="M 80 300 L 245 213 L 331 232 L 620 20 L 710 162 L 845 300 Z" fill="#e9eee4"/><path d="M 331 232 L 620 20 L 579 172 L 675 212 L 710 162 L 845 300 L 420 300 Z" fill="#e0e8dc"/><path d="M 620 20 L 710 162 L 672 151 L 650 105 L 629 114 L 602 80 L 565 108 Z" fill="#f8faf5"/>${routes.map(r=>`<path d="${r.path}" fill="none" stroke="${r.color}" stroke-opacity=".16" stroke-width="3"/><path class="revealed-route" data-route="${r.key}" d="${r.path}" fill="none" stroke="${r.color}" stroke-width="3.5" stroke-linecap="round"/><circle data-route-dot="${r.key}" r="6" fill="${r.color}" stroke="#fff" stroke-width="2"/><text x="${r.lx}" y="${r.ly}" fill="${r.color}" class="route-end-label">${r.label}</text>`).join('')}<circle cx="65" cy="283" r="7" fill="#fff" stroke="#829a8b" stroke-width="2"/><text x="49" y="314" class="route-start-label">Shared research goal</text></svg>`;
-  const paths=routes.map(r=>({path:document.querySelector(`[data-route="${r.key}"]`),dot:document.querySelector(`[data-route-dot="${r.key}"]`)}));
+  const scene=document.getElementById('pathway-scene');
+  scene.innerHTML=`<svg class="pathway-svg flagged-pathway" viewBox="0 0 1100 520" role="img" aria-label="Schematic evidence paths. Flags appear only after a reading checkpoint is reached. Green and blue flags mark recorded accomplishments; amber warning flags mark unresolved interpretation or scope. Only final RC outcomes are assigned."><path d="M 90 477 L 315 343 L 410 357 L 758 48 L 880 286 L 1040 477 Z" fill="#e9eee4"/><path d="M 410 357 L 758 48 L 711 225 L 837 324 L 880 286 L 1040 477 L 500 477 Z" fill="#dfe8da"/><path d="M 758 48 L 823 174 L 784 157 L 762 121 L 738 141 L 721 118 L 687 149 Z" fill="#f8faf5"/>${routes.map(r=>`<path d="${r.path}" fill="none" stroke="${r.color}" stroke-opacity=".11" stroke-width="2" stroke-dasharray="4 6"/><path class="revealed-route" data-route="${r.key}" d="${r.path}" fill="none" stroke="${r.color}" stroke-width="3.6" stroke-linecap="round"/><circle data-route-dot="${r.key}" r="6" fill="${r.color}" stroke="#fff" stroke-width="2"/>`).join('')}<g id="route-flags"></g><circle cx="70" cy="450" r="8" fill="#fff" stroke="#829a8b" stroke-width="2"/><text x="48" y="494" class="route-start-label">Shared research goal · same binding energy</text></svg>`;
+  const paths=routes.map(r=>({...r,path:scene.querySelector(`[data-route="${r.key}"]`),dot:scene.querySelector(`[data-route-dot="${r.key}"]`)}));
   paths.forEach(r=>{r.length=r.path.getTotalLength();r.path.style.strokeDasharray=String(r.length);});
+  const commonMeasure=document.createElementNS('http://www.w3.org/2000/svg','path');commonMeasure.setAttribute('d',commonPath);
+  const commonTargets=paths.map(r=>commonMeasure.getTotalLength()/r.length);
+  const checkpoints=[
+    {name:'Research goal',title:'What must the investigation explain?',body:'How does the attoclock offset change with intensity, and how far does a Coulomb scattering explanation extend to screened targets with the same binding energy?',targets:[0,0,0]},
+    {name:'Computed offsets',title:'All three generated numerical evidence.',body:'Each investigation computed Coulomb and screened-potential offsets. Generating these outputs is an important accomplishment, but it does not by itself identify the correct trend or establish the physical explanation.',targets:commonTargets},
+    {name:'Trend misread',title:'Gemini: the interpretation contradicts the computed trend.',body:'The report described all tested offsets as monotonically decreasing. Its saved λ = 1–3 curves rise, while λ = 5 and 10 rise and then fall. The amber flag marks this unresolved identification and mechanism requirement—not successful closure.',targets:[commonTargets[0],commonTargets[1],1]},
+    {name:'Identify response',title:'Kimi and GPT identified the screening-dependent response.',body:'Kimi corrected an angle-sign inconsistency; its two angle calculations then agreed to 4.53 × 10⁻⁷ rad. Both investigations identified the changes in the intensity response rather than merely producing the curves.',targets:[.48,.50,1]},
+    {name:'Explain mechanism',title:'A trend needs a physical explanation.',body:'Kimi interpreted the response through tunnel-exit distance relative to screening length. GPT explained the competition between shorter exit distance and increasing electron momentum as intensity rises.',targets:[.74,.79,1]},
+    {name:'Scope unresolved',title:'GPT: a separate high-field applicability concern remained.',body:'Its saved E₀ = 0.0800 a.u. exceeds the Coulomb-reference barrier-suppression threshold, 0.0625 a.u. A low Keldysh parameter does not resolve that separate risk. The threshold is not universal for screened targets; the final outcome is RC3.',targets:[.74,1,1]},
+    {name:'Scope justified',title:'Kimi supported the conclusion within a justified scope.',body:'The report restricted physical interpretation to quasistatic, sub-barrier exits and labeled other regimes formal extensions. Two saved intensities within its stated Coulomb window, approximately 0.0065 < I < 0.0078 a.u., retain a screening contrast. Its final outcome is RC4.',targets:[1,1,1]}
+  ];
+  const flagSpecs=[
+    {stage:1,route:0,t:commonTargets[0],color:'#607e6b',label:['Computed offsets'],dx:-70,dy:48},
+    {stage:2,route:2,t:1,color:'#c77844',label:['Trend misidentified'],dx:-175,dy:45,warning:true},
+    {stage:3,route:0,t:.48,color:'#206c52',label:['Screening response'],dx:-155,dy:-34},
+    {stage:3,route:1,t:.50,color:'#548497',label:['Intensity response'],dx:-85,dy:48},
+    {stage:4,route:0,t:.74,color:'#206c52',label:['Exit distance vs','screening length'],dx:-165,dy:-40},
+    {stage:4,route:1,t:.79,color:'#548497',label:['Exit distance &','electron momentum'],dx:-100,dy:47},
+    {stage:5,route:1,t:1,color:'#b67b3e',label:['High-field limit','unresolved'],dx:30,dy:-14,warning:true},
+    {stage:6,route:0,t:1,color:'#206c52',label:['Applicability','justified'],dx:30,dy:-10}
+  ];
+  const flags=document.getElementById('route-flags');
+  flags.innerHTML=flagSpecs.map((f,i)=>{const p=paths[f.route].path.getPointAtLength(paths[f.route].length*f.t);return `<g class="route-flag ${f.warning?'warning-flag':''}" data-flag="${i}" data-checkpoint="${f.stage}" transform="translate(${p.x} ${p.y})" role="button" tabindex="-1" aria-hidden="true" aria-label="${esc(checkpoints[f.stage].title)}"><circle r="3" fill="${f.color}"/><g class="flag-icon"><path d="M 0 0 L 0 -30" stroke="${f.color}" stroke-width="2"/><path d="M 0 -30 L 26 -24 L 0 -16 Z" fill="${f.color}"/>${f.warning?'<text x="7" y="-21" fill="#fff" font-size="10" font-weight="bold">!</text>':''}</g><text x="${f.dx}" y="${f.dy}" fill="${f.color}" class="checkpoint-label">${f.label.map((line,n)=>`<tspan x="${f.dx}" dy="${n?18:0}">${line}</tspan>`).join('')}</text></g>`;}).join('');
+  const flagElements=[...flags.children];
+  document.getElementById('pathway-milestones').innerHTML=checkpoints.map((c,i)=>`<button type="button" data-pathway-stage="${i}" aria-pressed="${i===0}">${i} · ${c.name}</button>`).join('');
   const play=document.getElementById('pathway-play'),pause=document.getElementById('pathway-pause'),slider=document.getElementById('pathway-scrub');
-  let position=1,running=false,frame=0,lastTime=0,lastChapter=-1;
-  const chapterCopy=['Reading chapter: numerical evidence. The paths are editorial illustrations, not execution traces.','Reading chapter: interpretation. Compare correct identification with Gemini’s misread intensity trends.','Reading chapter: applicability. The GPT and Kimi examples differ in how the model’s physical scope was justified.'];
+  const STEP_MS=2600,MOVE_MS=750,DURATION=STEP_MS*(checkpoints.length-1);
+  let position=0,running=false,frame=0,lastTime=0,completed=0;
+  function selectCheckpoint(stage){
+    const c=checkpoints[stage];
+    document.getElementById('pathway-checkpoint').innerHTML=`<span class="tiny-label">EVIDENCE CHECKPOINT · EDITORIAL SUMMARY</span><h4>${c.title}</h4><p>${esc(c.body)}</p>`;
+    document.querySelectorAll('[data-pathway-stage]').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.pathwayStage)===stage)));
+  }
   function renderPosition(p){
     position=Math.max(0,Math.min(1,p));
-    paths.forEach(r=>{r.path.style.strokeDashoffset=String(r.length*(1-position));const point=r.path.getPointAtLength(r.length*position);r.dot.setAttribute('cx',point.x);r.dot.setAttribute('cy',point.y);});
-    slider.value=String(Math.round(position*100));slider.setAttribute('aria-valuetext',`${Math.round(position*100)}% of the illustration revealed; not research progress`);
-    const chapter=Math.min(2,Math.floor(position*3));
-    document.querySelectorAll('.pathway-chapters li').forEach((li,i)=>li.classList.toggle('active',i===chapter));
-    if(chapter!==lastChapter||position===1){document.getElementById('pathway-status').textContent=position===1?'Complete illustration. Only final registered outcomes are shown; no intermediate RC is assigned.':chapterCopy[chapter];lastChapter=chapter;}
+    const scaled=position*(checkpoints.length-1),segment=Math.min(checkpoints.length-2,Math.floor(scaled));
+    const travel=position===1?1:Math.min(1,(scaled-segment)*STEP_MS/MOVE_MS);
+    const eased=travel*travel*(3-2*travel),reached=segment+(travel>=1?1:0);
+    paths.forEach((r,i)=>{const t=checkpoints[segment].targets[i]+(checkpoints[segment+1].targets[i]-checkpoints[segment].targets[i])*eased;r.path.style.strokeDashoffset=String(r.length*(1-t));const point=r.path.getPointAtLength(r.length*t);r.dot.setAttribute('cx',point.x);r.dot.setAttribute('cy',point.y);});
+    flagElements.forEach((el,i)=>{const visible=flagSpecs[i].stage<=reached;el.classList.toggle('planted',visible);el.setAttribute('aria-hidden',String(!visible));el.setAttribute('tabindex',visible?'0':'-1');if(visible&&flagSpecs[i].stage>completed&&running&&!reduceMotion())el.querySelector('.flag-icon').animate([{opacity:0,transform:'translateY(-10px)'},{opacity:1,transform:'translateY(0)'}],{duration:300,easing:'ease-out'});});
+    slider.value=String(Math.round(position*100));slider.setAttribute('aria-valuetext',`${Math.round(position*100)}% of the guided illustration; not execution progress`);
+    if(reached!==completed){completed=reached;selectCheckpoint(completed);}
+    document.getElementById('pathway-status').textContent=position===0?'Ready: play the guided path, or choose a checkpoint below. Amber flags mark unresolved issues—not completed scientific requirements.':position===1?'Complete illustration: eight evidence flags. Final outcomes are unchanged; no intermediate RC is assigned.':travel<1?`Moving to checkpoint ${segment+1}: ${checkpoints[segment+1].name}. This is a reading order, not execution chronology.`:`Checkpoint ${reached}: ${checkpoints[reached].name}. The illustration pauses here briefly so the evidence can be read.`;
   }
-  function stop(){running=false;cancelAnimationFrame(frame);pause.disabled=true;play.textContent=position<1?'Resume explanation':'Play explanation';}
-  function finish(){stop();renderPosition(1);play.textContent='Replay explanation';}
-  function tick(time){if(!running)return;const delta=Math.max(0,time-lastTime);lastTime=time;renderPosition(position+delta/4200);if(position>=1){finish();return;}frame=requestAnimationFrame(tick);}
+  function stop(){running=false;cancelAnimationFrame(frame);pause.disabled=true;play.disabled=false;play.textContent=position===0?'Play guided path':position<1?'Resume guided path':'Replay guided path';}
+  function finish(){stop();renderPosition(1);play.textContent='Replay guided path';}
+  function tick(time){if(!running)return;const delta=Math.max(0,time-lastTime);lastTime=time;renderPosition(position+delta/DURATION);if(position>=1){finish();return;}frame=requestAnimationFrame(tick);}
   play.addEventListener('click',()=>{
-    if(reduceMotion()){finish();document.getElementById('pathway-status').textContent='Reduced motion: complete illustration shown immediately. Final outcomes and evidence are unchanged.';return;}
-    if(running)return;if(position>=1)renderPosition(0);running=true;lastTime=performance.now();pause.disabled=false;play.textContent='Playing…';frame=requestAnimationFrame(tick);
+    if(reduceMotion()){finish();document.getElementById('pathway-status').textContent='Reduced motion: all evidence flags shown immediately.';return;}
+    if(running)return;if(position>=1){renderPosition(0);selectCheckpoint(0);}running=true;lastTime=performance.now();pause.disabled=false;play.disabled=true;play.textContent='Following evidence…';frame=requestAnimationFrame(tick);
   });
-  pause.addEventListener('click',()=>{stop();document.getElementById('pathway-status').textContent='Illustration paused. Resume, drag the illustration position, or show the complete figure.';});
+  pause.addEventListener('click',()=>{stop();document.getElementById('pathway-status').textContent='Paused. Inspect a planted flag, resume, or show all checkpoints.';});
   document.getElementById('pathway-skip').addEventListener('click',finish);
-  slider.addEventListener('input',()=>{stop();renderPosition(Number(slider.value)/100);play.textContent=position<1?'Resume explanation':'Replay explanation';});
+  slider.addEventListener('input',()=>{stop();renderPosition(Number(slider.value)/100);play.textContent=position<1?'Resume guided path':'Replay guided path';});
+  document.getElementById('pathway-milestones').addEventListener('click',e=>{const b=e.target.closest('[data-pathway-stage]');if(!b)return;stop();const stage=Number(b.dataset.pathwayStage);renderPosition(stage===0?0:(stage-1+MOVE_MS/STEP_MS+.001)/(checkpoints.length-1));selectCheckpoint(stage);});
+  function inspectFlag(e){const el=e.target.closest('[data-checkpoint]');if(!el||el.getAttribute('aria-hidden')==='true')return;stop();selectCheckpoint(Number(el.dataset.checkpoint));document.getElementById('pathway-status').textContent='Selected a recorded evidence checkpoint. Its description does not change the final grade.';}
+  flags.addEventListener('click',inspectFlag);flags.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();inspectFlag(e);}});
   document.addEventListener('visibilitychange',()=>{if(document.hidden&&running)stop();});
-  window.PCB_FIGURES={finishAnimation:finish};renderPosition(1);
+  window.PCB_FIGURES={finishAnimation:finish};selectCheckpoint(0);renderPosition(0);
+  if(reduceMotion())finish();
 })();
