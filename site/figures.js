@@ -38,6 +38,8 @@
   // Synchronized reading progress is illustrative, never execution timing.
   const checkpointProgress=[0,.25,.45,.60,.78,.92,1];
   checkpoints.forEach((c,i)=>{c.targets=paths.map(()=>checkpointProgress[i]);});
+  // GPT stops at its applicability marker; no path continues beyond that endpoint.
+  checkpoints[5].targets[1]=1;
   const evidencePanels=[
     ['A shared physical question','Compare the offset Δφ(I) for a Coulomb potential and screened targets matched to the same binding energy. A numerical curve, its interpretation, and the physical limits of that interpretation are separate parts of the answer.'],
     ['Three recorded approaches','Kimi: constructed scattering calculations and checked two angle calculations. GPT: repaired its numerical solver and generated Coulomb and screened responses. Gemini: revised trajectory propagation and the angle convention, then generated offset scans.'],
@@ -56,20 +58,22 @@
   }
   const flagSpecs=[
     {stage:1,route:0,color:'#206c52',label:['Scattering model'],dx:-155,dy:-28},
-    {stage:1,route:1,color:'#548497',label:['Screened trajectories'],dx:-210,dy:30},
+    {stage:1,route:1,color:'#548497',label:['Screened trajectories'],dx:-210,dy:84},
     {stage:1,route:2,color:'#c77844',label:['Computed offsets'],dx:-40,dy:68},
-    {stage:2,route:2,color:'#c77844',label:['Trend misidentified'],dx:35,dy:42,issue:'error'},
+    {stage:2,route:2,color:'#c77844',label:['Trend misidentified'],dx:80,dy:75,issue:'error'},
     {stage:3,route:0,color:'#206c52',label:['Screening response'],dx:-170,dy:-32},
-    {stage:3,route:1,color:'#548497',label:['Intensity response'],dx:-100,dy:50},
+    {stage:3,route:1,color:'#548497',label:['Intensity response'],dx:45,dy:85},
     {stage:4,route:0,color:'#206c52',label:['Exit distance vs','screening length'],dx:-175,dy:-40},
     {stage:4,route:1,color:'#548497',label:['Exit distance &','electron momentum'],dx:-70,dy:50},
-    {stage:5,route:1,color:'#548497',label:['High-field limit','unresolved'],dx:32,dy:-20,issue:'caution'},
+    {stage:5,route:1,endpoint:true,color:'#548497',label:['High-field limit','unresolved'],dx:32,dy:-38,issue:'caution'},
     {stage:6,route:0,color:'#206c52',label:['Applicability','justified'],dx:30,dy:-10},
     {stage:6,route:2,color:'#c77844',label:['Incomplete closure'],dx:-180,dy:45,issue:'error',inspect:2}
   ];
   const flags=document.getElementById('route-flags');
-  flags.innerHTML=flagSpecs.map((f,i)=>{const p=paths[f.route].path.getPointAtLength(paths[f.route].length*checkpointProgress[f.stage]);const icon=f.issue?`<g class="marker-icon issue-icon ${f.issue}"><circle class="issue-ring" r="11" fill="#fafbf7" stroke="${f.color}" stroke-width="2.5"/>${f.issue==='error'?`<path d="M -4 -4 L 4 4 M -4 4 L 4 -4" fill="none" stroke="${f.color}" stroke-width="2.5" stroke-linecap="round"/>`:`<text y="5" text-anchor="middle" fill="${f.color}" font-size="16" font-family="Arial" font-weight="bold">!</text>`}</g>`:`<g class="marker-icon flag-icon"><path d="M 0 0 L 0 -30" stroke="${f.color}" stroke-width="2"/><path d="M 0 -30 L 26 -24 L 0 -16 Z" fill="${f.color}"/></g>`;return `<g class="route-flag ${f.issue?'warning-flag':''}" data-flag="${i}" data-checkpoint="${f.inspect??f.stage}" transform="translate(${p.x} ${p.y})" role="button" tabindex="-1" aria-hidden="true" aria-label="${esc(checkpoints[f.inspect??f.stage].title)}"><circle r="3" fill="${f.color}"/>${icon}<text x="${f.dx}" y="${f.dy}" fill="${f.color}" class="checkpoint-label">${f.label.map((line,n)=>`<tspan x="${f.dx}" dy="${n?18:0}">${line}</tspan>`).join('')}</text></g>`;}).join('');
+  flags.innerHTML=flagSpecs.map((f,i)=>{const p=paths[f.route].path.getPointAtLength(paths[f.route].length*(f.endpoint?1:checkpointProgress[f.stage]));const icon=f.issue?`<g class="marker-icon issue-icon ${f.issue}"><circle class="issue-ring" r="11" fill="#fafbf7" stroke="${f.color}" stroke-width="2.5"/>${f.issue==='error'?`<path d="M -4 -4 L 4 4 M -4 4 L 4 -4" fill="none" stroke="${f.color}" stroke-width="2.5" stroke-linecap="round"/>`:`<text y="5" text-anchor="middle" fill="${f.color}" font-size="16" font-family="Arial" font-weight="bold">!</text>`}</g>`:`<g class="marker-icon flag-icon"><path d="M 0 0 L 0 -30" stroke="${f.color}" stroke-width="2"/><path d="M 0 -30 L 26 -24 L 0 -16 Z" fill="${f.color}"/></g>`;return `<g class="route-flag ${f.issue?'warning-flag':''}" data-flag="${i}" data-checkpoint="${f.inspect??f.stage}" transform="translate(${p.x} ${p.y})" role="button" tabindex="-1" aria-hidden="true" aria-label="${esc(checkpoints[f.inspect??f.stage].title)}"><circle r="3" fill="${f.color}"/>${icon}<text x="${f.dx}" y="${f.dy}" fill="${f.color}" class="checkpoint-label">${f.label.map((line,n)=>`<tspan x="${f.dx}" dy="${n?18:0}">${line}</tspan>`).join('')}</text></g>`;}).join('');
   const flagElements=[...flags.children];
+  // A short leader keeps the displaced intensity label tied to its blue node.
+  flagElements[5].insertAdjacentHTML('afterbegin','<path d="M 0 6 L 24 55 L 40 70" fill="none" stroke="#548497" stroke-opacity=".55" stroke-width="1.2" stroke-dasharray="3 3" pointer-events="none"/>');
   const miniPlots=[
     {stage:3,title:'Screening response',label:'Kimi · qualitative response curves',svg:'<path d="M 24 37 C 77 40 143 43 222 45" stroke="#244839"/><path d="M 24 47 C 80 47 145 46 222 45" stroke="#206c52"/><path d="M 24 60 C 82 53 146 48 222 45" stroke="#4c9b78"/><path d="M 24 88 C 85 61 151 50 222 45" stroke="#83bda1"/>',caption:'Different screening-dependent responses approach one another in the illustration.'},
     {stage:3,title:'Intensity response',label:'GPT · qualitative rising and turning-over response',svg:'<path d="M 24 89 C 79 78 120 30 162 34 S 200 43 222 49" stroke="#548497"/><circle cx="162" cy="34" r="3.5" fill="#fafbf7" stroke="#548497" stroke-width="2"/>',caption:'The rising and turning-over shape is a schematic, not a new numerical curve.'},
@@ -98,7 +102,7 @@
     miniatureElements.forEach(el=>{const visible=Number(el.dataset.miniStage)<=reached;el.classList.toggle('revealed',visible);el.querySelector('.schematic-curves').setAttribute('aria-hidden',String(!visible));});
     slider.value=String(Math.round(position*100));slider.setAttribute('aria-valuetext',`${Math.round(position*100)}% of the guided illustration; not execution progress`);
     if(reached!==completed){completed=reached;selectCheckpoint(completed);}
-    document.getElementById('pathway-status').textContent=position===0?(reduceMotion()?'Reduced motion is enabled. Nothing plays automatically; press Play to explicitly watch this guided path.':'Ready: three paths advance together. Flags mark accomplishments; × marks a misinterpretation and ! an unresolved applicability concern.'):position===1?'Complete illustration: eight accomplishment flags and three issue markers. Final outcomes are unchanged; no intermediate RC is assigned.':travel<1?`All three paths are moving to reading checkpoint ${segment+1}: ${checkpoints[segment+1].name}. This is not execution chronology.`:`Checkpoint ${reached}: ${checkpoints[reached].name}. Pause to inspect the evidence; all three paths resume together.`;
+    document.getElementById('pathway-status').textContent=position===0?(reduceMotion()?'Reduced motion is enabled. Nothing plays automatically; press Play to explicitly watch this guided path.':'Ready: three paths advance together until their respective endpoints. Flags mark accomplishments; × marks a misinterpretation and ! an unresolved applicability concern.'):position===1?'Complete illustration: eight accomplishment flags and three issue markers. Final outcomes are unchanged; no intermediate RC is assigned.':travel<1?`Advancing to reading checkpoint ${segment+1}: ${checkpoints[segment+1].name}. This is not execution chronology.`:`Checkpoint ${reached}: ${checkpoints[reached].name}. Pause to inspect the evidence, or resume the remaining path segments.`;
   }
   function stop(){running=false;cancelAnimationFrame(frame);pause.disabled=true;play.disabled=false;play.textContent=position===0?'Play guided path':position<1?'Resume guided path':'Replay guided path';}
   function finish(){stop();renderPosition(1);play.textContent='Replay guided path';}
