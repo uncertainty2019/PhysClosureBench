@@ -9,8 +9,8 @@ function updateMotion() {
   const reduced=reduceMotion();
   document.documentElement.classList.toggle('reduce-motion',reduced);
   const input=document.getElementById('reduce-motion');input.checked=reduced;input.disabled=systemMotion.matches;
-  document.getElementById('motion-note').textContent=systemMotion.matches?'Reduced motion follows your system preference. Every view remains available.':reduced?'Motion is off. All evidence and outcomes remain available.':'Animations are brief, user-controlled explanations—not execution replays.';
-  if(reduced){finishMotion();window.PCB_FIGURES?.finishAnimation();}
+  document.getElementById('motion-note').textContent=reduced?'Reduced motion: automatic effects are off. The guided path plays only when you press Play.':'Animations are brief, user-controlled explanations—not execution replays.';
+  if(reduced){finishMotion();window.PCB_FIGURES?.pauseAnimation();}
 }
 const esc = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function renderChart(mode) {

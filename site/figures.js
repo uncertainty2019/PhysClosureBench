@@ -37,6 +37,22 @@
     {name:'Scope unresolved',title:'GPT: a separate high-field applicability concern remained.',body:'Its saved E₀ = 0.0800 a.u. exceeds the Coulomb-reference barrier-suppression threshold, 0.0625 a.u. A low Keldysh parameter does not resolve that separate risk. The threshold is not universal for screened targets; the final outcome is RC3.',targets:[.74,1,1]},
     {name:'Scope justified',title:'Kimi supported the conclusion within a justified scope.',body:'The report restricted physical interpretation to quasistatic, sub-barrier exits and labeled other regimes formal extensions. Two saved intensities within its stated Coulomb window, approximately 0.0065 < I < 0.0078 a.u., retain a screening contrast. Its final outcome is RC4.',targets:[1,1,1]}
   ];
+  const evidencePanels=[
+    ['A shared physical question','Compare the offset Δφ(I) for a Coulomb potential and screened targets matched to the same binding energy. A numerical curve, its interpretation, and the physical limits of that interpretation are separate parts of the answer.'],
+    ['Three recorded approaches','Kimi: constructed scattering calculations and checked two angle calculations. GPT: repaired its numerical solver and generated Coulomb and screened responses. Gemini: revised trajectory propagation and the angle convention, then generated offset scans.'],
+    ['The saved curves versus the report','Gemini described all tested offsets as decreasing monotonically. The plotted λ = 2 curve rises; λ = 5 rises and turns over. This is an identification error, not a failure to generate numerical output.'],
+    ['Numerical consistency is not physical applicability','Kimi found opposite angle signs from orbit integration and direct trajectory propagation. After correcting the convention, their discrepancy was 4.53 × 10⁻⁷ rad. That checks consistency; a separate argument is still needed to establish where the model applies.'],
+    ['Two supported mechanism arguments','Kimi compared the tunnel-exit distance with the screening length. GPT balanced the shorter exit distance against increasing electron momentum as intensity rises. These are distinct physical explanations of the screening-dependent response, not merely descriptions of curve shape.'],
+    ['An unresolved high-field diagnostic','The saved field exceeds a Coulomb-reference barrier-suppression threshold. The final report did not reconcile that warning with its favorable interpretation of the low-Keldysh-parameter regime. The mechanism was supported, but this applicability issue remained.'],
+    ['A conclusion with a stated physical scope','Kimi restricted physical interpretation to quasistatic, sub-barrier exits. It labeled other regimes formal extensions. Two saved intensities inside the stated Coulomb window still showed a screening contrast, supporting the conclusion within that scope.']
+  ];
+  function checkpointEvidence(stage){
+    if(stage===2)return `<div class="checkpoint-evidence"><span class="tiny-label">SUBMITTED DATA · EVALUATOR REPLOT</span>${curvePlot(true)}<p>All 100 samples per curve; straight connectors, no fit or smoothing. λ is the screening length. Highlights and this explanation are editorial, not candidate text.</p></div>`;
+    if(stage===3)return '<div class="checkpoint-evidence"><span class="tiny-label">RECORDED CONSISTENCY CHECK</span><strong class="checkpoint-number">4.53 × 10<sup>−7</sup> <small>rad</small></strong><p>Angle discrepancy after correcting the convention between orbit integration and direct trajectory propagation.</p></div>';
+    if(stage===5)return '<div class="checkpoint-evidence"><span class="tiny-label">RECORDED FIELD DIAGNOSTIC</span><div class="checkpoint-bar"><span>Saved E₀</span><i style="--bar:80%;--color:#c77844"></i><b>0.0800</b></div><div class="checkpoint-bar"><span>Coulomb E<sub>BSI</sub></span><i style="--bar:62.5%;--color:#739d9d"></i><b>0.0625</b></div><p>Fields in atomic units; common scale 0–0.10. This reference threshold is not universal for screened targets.</p></div>';
+    if(stage===6)return '<div class="checkpoint-evidence"><span class="tiny-label">STATED COULOMB WINDOW</span><strong class="checkpoint-number window-number">0.0065 &lt; I &lt; 0.0078 <small>a.u.</small></strong><p>Two saved intensities inside the stated window retain a screening contrast. This is reported evidence, not a newly computed test.</p></div>';
+    return '';
+  }
   const flagSpecs=[
     {stage:1,route:0,t:commonTargets[0],color:'#607e6b',label:['Computed offsets'],dx:-70,dy:48},
     {stage:2,route:2,t:1,color:'#c77844',label:['Trend misidentified'],dx:-175,dy:45,warning:true},
@@ -56,7 +72,9 @@
   let position=0,running=false,frame=0,lastTime=0,completed=0;
   function selectCheckpoint(stage){
     const c=checkpoints[stage];
-    document.getElementById('pathway-checkpoint').innerHTML=`<span class="tiny-label">EVIDENCE CHECKPOINT · EDITORIAL SUMMARY</span><h4>${c.title}</h4><p>${esc(c.body)}</p>`;
+    const evidence=checkpointEvidence(stage),detail=evidencePanels[stage];
+    document.getElementById('pathway-checkpoint').classList.toggle('with-evidence',Boolean(evidence));
+    document.getElementById('pathway-checkpoint').innerHTML=`<div class="checkpoint-copy"><span class="tiny-label">EVIDENCE CHECKPOINT · EDITORIAL SUMMARY</span><h4>${c.title}</h4><p>${esc(c.body)}</p><details class="checkpoint-detail"><summary>${esc(detail[0])}</summary><p>${esc(detail[1])}</p></details></div>${evidence}`;
     document.querySelectorAll('[data-pathway-stage]').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.pathwayStage)===stage)));
   }
   function renderPosition(p){
@@ -68,13 +86,12 @@
     flagElements.forEach((el,i)=>{const visible=flagSpecs[i].stage<=reached;el.classList.toggle('planted',visible);el.setAttribute('aria-hidden',String(!visible));el.setAttribute('tabindex',visible?'0':'-1');if(visible&&flagSpecs[i].stage>completed&&running&&!reduceMotion())el.querySelector('.flag-icon').animate([{opacity:0,transform:'translateY(-10px)'},{opacity:1,transform:'translateY(0)'}],{duration:300,easing:'ease-out'});});
     slider.value=String(Math.round(position*100));slider.setAttribute('aria-valuetext',`${Math.round(position*100)}% of the guided illustration; not execution progress`);
     if(reached!==completed){completed=reached;selectCheckpoint(completed);}
-    document.getElementById('pathway-status').textContent=position===0?'Ready: play the guided path, or choose a checkpoint below. Amber flags mark unresolved issues—not completed scientific requirements.':position===1?'Complete illustration: eight evidence flags. Final outcomes are unchanged; no intermediate RC is assigned.':travel<1?`Moving to checkpoint ${segment+1}: ${checkpoints[segment+1].name}. This is a reading order, not execution chronology.`:`Checkpoint ${reached}: ${checkpoints[reached].name}. The illustration pauses here briefly so the evidence can be read.`;
+    document.getElementById('pathway-status').textContent=position===0?(reduceMotion()?'Reduced motion is enabled. Nothing plays automatically; press Play to explicitly watch this guided path.':'Ready: press Play or choose a checkpoint below. Amber flags mark unresolved issues—not completed requirements.'):position===1?'Complete illustration: eight evidence flags. Final outcomes are unchanged; no intermediate RC is assigned.':travel<1?`Moving to checkpoint ${segment+1}: ${checkpoints[segment+1].name}. This is a reading order, not execution chronology.`:`Checkpoint ${reached}: ${checkpoints[reached].name}. Pause here to inspect the evidence, or use the checkpoint buttons to return later.`;
   }
   function stop(){running=false;cancelAnimationFrame(frame);pause.disabled=true;play.disabled=false;play.textContent=position===0?'Play guided path':position<1?'Resume guided path':'Replay guided path';}
   function finish(){stop();renderPosition(1);play.textContent='Replay guided path';}
   function tick(time){if(!running)return;const delta=Math.max(0,time-lastTime);lastTime=time;renderPosition(position+delta/DURATION);if(position>=1){finish();return;}frame=requestAnimationFrame(tick);}
   play.addEventListener('click',()=>{
-    if(reduceMotion()){finish();document.getElementById('pathway-status').textContent='Reduced motion: all evidence flags shown immediately.';return;}
     if(running)return;if(position>=1){renderPosition(0);selectCheckpoint(0);}running=true;lastTime=performance.now();pause.disabled=false;play.disabled=true;play.textContent='Following evidence…';frame=requestAnimationFrame(tick);
   });
   pause.addEventListener('click',()=>{stop();document.getElementById('pathway-status').textContent='Paused. Inspect a planted flag, resume, or show all checkpoints.';});
@@ -84,6 +101,5 @@
   function inspectFlag(e){const el=e.target.closest('[data-checkpoint]');if(!el||el.getAttribute('aria-hidden')==='true')return;stop();selectCheckpoint(Number(el.dataset.checkpoint));document.getElementById('pathway-status').textContent='Selected a recorded evidence checkpoint. Its description does not change the final grade.';}
   flags.addEventListener('click',inspectFlag);flags.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();inspectFlag(e);}});
   document.addEventListener('visibilitychange',()=>{if(document.hidden&&running)stop();});
-  window.PCB_FIGURES={finishAnimation:finish};selectCheckpoint(0);renderPosition(0);
-  if(reduceMotion())finish();
+  window.PCB_FIGURES={finishAnimation:finish,pauseAnimation:stop};selectCheckpoint(0);renderPosition(0);
 })();
